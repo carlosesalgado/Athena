@@ -1,0 +1,73 @@
+
+	/**
+	 * Assuming a global variable with the current stock handled
+	 */
+	public Stock currentStock;
+
+	/**
+	 * 1.i) Given any price as input, calculate the dividend yield
+	 */
+	public Double calcDivYeld(Double price) {
+		if(currentStock.FixedDividend() == null) {
+			return currentStock.LastDividend/price;
+		} else {
+			return currentStock.FixedDividend*currentStock.ParValue/price;
+		}
+	}
+	
+
+	/**
+	 * 1.ii) Given any price as input, calculate the P/E Ratio
+	 */
+	public Double calcPERatio(Double price) {
+		return price/currentStock.LastDividend;
+	}
+
+
+	/**
+	 * 1.iii) Record a trade, with timestamp, quantity of shares, buy or sell indicator and traded price
+	 */
+	public Trade recTrade(Integer quantity, String indicator, Double price) {
+		Trade trade = new Trade();
+
+		trade.timestamp = new Date();
+		trade.qtyShares = quantity;
+		trade.buysellInd = indicator;
+		trade.price = price;
+
+		return trade;
+	}
+
+	
+	/**
+	 * 1.iv) Calculate Volume Weighted Stock Price based on trades in past 15 minutes
+	 */
+	public Double calcVWSP(SortedMap<Date, Trade> tradesHist) {
+		Date now = new Date();
+		Date start = new Date(now.getTime() - (15 * 60 * 1000));
+		tradesHist.tailMap(start);
+
+		Double volumeWSP = 0.0;
+		Integer totalQty = 0;
+		for (Trade trade: tradesHist.values()) {
+			totalQty += trade.getQty();
+			volumeWSP += trade.getPrice() * trade.getQty();
+		}
+
+		return volumeWSP/totalQty;
+	}
+
+
+	/**
+	 * 2. Calculate the GBCE All Share Index using the geometric mean of prices for all stocks
+	 */
+	public Double calcGBCEAllShareIndex(Map<String, Stock> indexStocks) {
+		Double valueGBCE = 1.0;
+
+		for(Stock stock: indexStocks.values()) {
+			valueGBCE*=stock.getPrice();
+		}
+
+		return Math.pow(valueGBCE, 1.0 / indexStocks.size());
+	}
+	
